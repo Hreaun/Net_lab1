@@ -4,24 +4,35 @@ import java.util.ArrayList;
 
 public class Client {
     private final long TTL = 100_000L; // TTL should be > than sleep time.
-    private final MulticastSocket socketIn;
-    private final DatagramSocket socketOut;
+    private MulticastSocket socketIn = null;
+    private DatagramSocket socketOut = null;
 
     private final InetAddress group;
     private byte[] buf = new byte[256];
     private final ArrayList<Status> copies;
 
-    public DatagramSocket getSocketOut() {
-        return socketOut;
+    public void closeSockets() {
+        socketOut.close();
+        socketIn.close();
     }
 
     public Client(String group) throws IOException {
         copies = new ArrayList<>();
-        socketIn = new MulticastSocket(4444);
-        socketOut = new DatagramSocket();
-
-        this.group = InetAddress.getByName(group);
-        socketIn.joinGroup(this.group);
+        try {
+            socketOut = new DatagramSocket();
+            socketIn = new MulticastSocket(4444);
+            this.group = InetAddress.getByName(group);
+            socketIn.joinGroup(this.group);
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+            if (socketIn != null) {
+                socketIn.close();
+            }
+            if (socketOut != null) {
+                socketOut.close();
+            }
+            throw e;
+        }
     }
 
     private void printCopies() {

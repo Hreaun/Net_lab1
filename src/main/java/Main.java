@@ -10,14 +10,13 @@ public class Main {
         try {
             client = new Client(args[0]);
         } catch (IOException e) {
-            System.out.println(e.getMessage());
             return;
         }
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
                 Thread.sleep(200);
                 client.sendMsg("Bye");
-                client.getSocketOut().close();
+                client.closeSockets();
             } catch (IOException | InterruptedException e) {
                 Thread.currentThread().interrupt();
                 System.out.println(e.getMessage());
@@ -30,6 +29,7 @@ public class Main {
                 client.recvMsg();
                 Thread.sleep(3000);
             } catch (IOException | InterruptedException ignored) {
+                break;
             }
         }
 
